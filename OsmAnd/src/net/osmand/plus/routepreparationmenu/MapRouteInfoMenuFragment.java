@@ -139,9 +139,6 @@ public class MapRouteInfoMenuFragment extends ContextMenuFragment {
 				View appModesView = view.findViewById(R.id.app_modes);
 				appModesView.setPadding(0, 0, appModesView.getPaddingRight(), 0);
 			}
-
-			updateInfo(view);
-			runLayoutListener();
 		}
 		return view;
 	}
@@ -149,10 +146,26 @@ public class MapRouteInfoMenuFragment extends ContextMenuFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		if (menu == null) {
-			dismiss();
+		OsmandApplication app = getMyApplication();
+		if (app != null) {
+			if (menu == null) {
+				dismiss();
+				return;
+			}
+			updateControlButtons();
+			updateInfo();
+			View mainView = getMainView();
+			if (mainView != null) {
+				View progressBar = mainView.findViewById(R.id.progress_bar);
+				boolean progressVisible = progressBar != null && progressBar.getVisibility() == View.VISIBLE;
+				boolean routeCalculating = app.getRoutingHelper().isRouteBeingCalculated() || app.getTransportRoutingHelper().isRouteBeingCalculated();
+				if (progressVisible && !routeCalculating) {
+					hideRouteCalculationProgressBar();
+					openMenuHalfScreen();
+				}
+			}
+			menu.addTargetPointListener();
 		}
-		menu.addTargetPointListener();
 	}
 
 	@Override
@@ -242,10 +255,10 @@ public class MapRouteInfoMenuFragment extends ContextMenuFragment {
 
 	@Override
 	protected void calculateLayout(View view) {
-		super.calculateLayout(view);
 		menuTitleHeight = view.findViewById(R.id.route_menu_top_shadow_all).getHeight()
 				+ view.findViewById(R.id.control_buttons).getHeight()
 				- view.findViewById(R.id.buttons_shadow).getHeight();
+		super.calculateLayout(view);
 	}
 
 	private void adjustMapPosition(int y) {

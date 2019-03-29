@@ -1,8 +1,6 @@
 package net.osmand.plus.routepreparationmenu;
 
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
@@ -200,8 +198,8 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 				AndroidUtils.setBackground(mainView.getContext(), cardsContainer, isNightMode(), R.drawable.travel_card_bg_light, R.drawable.travel_card_bg_dark);
 			} else {
 				topShadow.setVisibility(View.VISIBLE);
-				AndroidUtils.setBackground(mainView.getContext(), bottomContainer, isNightMode(), R.color.route_info_bg_light, R.color.route_info_bg_dark);
-				AndroidUtils.setBackground(mainView.getContext(), cardsContainer, isNightMode(), R.color.route_info_bg_light, R.color.route_info_bg_dark);
+				AndroidUtils.setBackground(mainView.getContext(), bottomContainer, isNightMode(), R.color.card_and_list_background_light, R.color.card_and_list_background_dark);
+				AndroidUtils.setBackground(mainView.getContext(), cardsContainer, isNightMode(), R.color.card_and_list_background_light, R.color.card_and_list_background_dark);
 			}
 		}
 	}
@@ -221,8 +219,8 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 				AndroidUtils.setBackground(mainView.getContext(), cardsContainer, isNightMode(), R.drawable.travel_card_bg_light, R.drawable.travel_card_bg_dark);
 			} else {
 				topShadow.setVisibility(View.VISIBLE);
-				AndroidUtils.setBackground(mainView.getContext(), bottomContainer, isNightMode(), R.color.route_info_bg_light, R.color.route_info_bg_dark);
-				AndroidUtils.setBackground(mainView.getContext(), cardsContainer, isNightMode(), R.color.route_info_bg_light, R.color.route_info_bg_dark);
+				AndroidUtils.setBackground(mainView.getContext(), bottomContainer, isNightMode(), R.color.card_and_list_background_light, R.color.card_and_list_background_dark);
+				AndroidUtils.setBackground(mainView.getContext(), cardsContainer, isNightMode(), R.color.card_and_list_background_light, R.color.card_and_list_background_dark);
 			}
 		}
 	}
@@ -319,6 +317,11 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 						mainView.requestDisallowInterceptTouchEvent(true);
 					}
 					return false;
+				}
+			}, new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					openDetails();
 				}
 			});
 			statisticCard.setTransparentBackground(true);
@@ -850,8 +853,8 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 			iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
 			imageViewLayoutParams.setMargins(dpToPx(14), dpToPx(8), dpToPx(22), 0);
-			iconView.setPadding(dpToPx(2), dpToPx(2), dpToPx(2), dpToPx(2));
 			iconView.setBackgroundResource(R.drawable.border_round_solid_light);
+			iconView.setPadding(dpToPx(2), dpToPx(2), dpToPx(2), dpToPx(2));
 			baseItemView.addView(iconView);
 		}
 
@@ -970,8 +973,8 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 			iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
 			imageViewLayoutParams.setMargins(dpToPx(14), dpToPx(8), dpToPx(22), 0);
-			iconView.setPadding(dpToPx(2), dpToPx(2), dpToPx(2), dpToPx(2));
 			iconView.setBackgroundResource(R.drawable.border_round_solid_light);
+			iconView.setPadding(dpToPx(2), dpToPx(2), dpToPx(2), dpToPx(2));
 			baseItemView.addView(iconView);
 		}
 
@@ -1240,8 +1243,8 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 			iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
 			imageViewLayoutParams.setMargins(dpToPx(17), 0, dpToPx(25), 0);
-			iconView.setPadding(dpToPx(2), dpToPx(2), dpToPx(2), dpToPx(2));
 			iconView.setBackgroundResource(R.drawable.border_round_solid_light_small);
+			iconView.setPadding(dpToPx(2), dpToPx(2), dpToPx(2), dpToPx(2));
 			baseItemView.addView(iconView);
 		}
 
@@ -1324,9 +1327,9 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 		ll.setOrientation(LinearLayout.HORIZONTAL);
 		LinearLayout.LayoutParams llParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		ll.setMinimumHeight(dpToPx(minHeight));
-		ll.setPadding(dpToPx(64), 0, dpToPx(16), 0);
 		ll.setLayoutParams(llParams);
 		ll.setBackgroundResource(AndroidUtils.resolveAttribute(context, android.R.attr.selectableItemBackground));
+		ll.setPadding(dpToPx(64f), 0, dpToPx(16f), 0);
 		ll.setOnLongClickListener(onLongClickListener);
 		return ll;
 	}
@@ -1444,7 +1447,6 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 
 	void openDetails() {
 		if (gpxItem != null && elevationDataSet != null) {
-			OsmandApplication app = requireMyApplication();
 			LatLon location = null;
 			WptPt wpt = null;
 			gpxItem.chartTypes = new GPXDataSetType[]{GPXDataSetType.ALTITUDE, GPXDataSetType.SLOPE};
@@ -1473,33 +1475,9 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 				gpxItem.locationOnMap = gpxItem.locationStart;
 			}
 
-			final MapActivity activity = (MapActivity) getActivity();
-			if (activity != null) {
-				dismiss();
-
-				final OsmandSettings settings = app.getSettings();
-				settings.setMapLocationToShow(location.getLatitude(), location.getLongitude(),
-						settings.getLastKnownMapZoom(),
-						new PointDescription(PointDescription.POINT_TYPE_WPT, gpxItem.name),
-						false,
-						gpxItem);
-
-				final MapRouteInfoMenu mapRouteInfoMenu = activity.getMapRouteInfoMenu();
-				if (mapRouteInfoMenu.isVisible()) {
-					// We arrived here by the route info menu.
-					// First, we close it and then show the details.
-					mapRouteInfoMenu.setOnDismissListener(new OnDismissListener() {
-						@Override
-						public void onDismiss(DialogInterface dialog) {
-							mapRouteInfoMenu.setOnDismissListener(null);
-							MapActivity.launchMapActivityMoveToTop(activity);
-						}
-					});
-					mapRouteInfoMenu.hide();
-				} else {
-					// We arrived here by the dashboard.
-					MapActivity.launchMapActivityMoveToTop(activity);
-				}
+			ChooseRouteFragment parent = (ChooseRouteFragment) getParentFragment();
+			if (parent != null) {
+				parent.analyseOnMap(location, gpxItem);
 			}
 		}
 	}
